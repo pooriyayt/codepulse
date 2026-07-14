@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#15181d"/>
+      <stop offset="100%" stop-color="#0b0d10"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5e9fe8"/>
+      <stop offset="100%" stop-color="#72e0c8"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="15%" cy="8%" r="55%">
+      <stop offset="0%" stop-color="#5e9fe8" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#5e9fe8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="92%" cy="90%" r="55%">
+      <stop offset="0%" stop-color="#72bc8f" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#72bc8f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+
+  <!-- faint dot grid -->
+  <g fill="#ffffff" opacity="0.05">
+    <circle cx="120" cy="560" r="2.5"/><circle cx="160" cy="560" r="2.5"/><circle cx="200" cy="560" r="2.5"/>
+    <circle cx="120" cy="590" r="2.5"/><circle cx="160" cy="590" r="2.5"/><circle cx="200" cy="590" r="2.5"/>
+    <circle cx="640" cy="70" r="2.5"/><circle cx="680" cy="70" r="2.5"/><circle cx="720" cy="70" r="2.5"/>
+  </g>
+
+  <!-- decorative dependency-graph nodes, top right -->
+  <g stroke="#5e9fe8" stroke-opacity="0.4" stroke-width="1.5" fill="none">
+    <line x1="955" y1="96" x2="1042" y2="64"/>
+    <line x1="1042" y1="64" x2="1124" y2="112"/>
+    <line x1="955" y1="96" x2="1012" y2="154"/>
+    <line x1="1012" y1="154" x2="1124" y2="112"/>
+    <line x1="1042" y1="64" x2="1012" y2="154"/>
+  </g>
+  <g fill="#72e0c8">
+    <circle cx="955" cy="96" r="5"/>
+    <circle cx="1042" cy="64" r="5"/>
+    <circle cx="1124" cy="112" r="5"/>
+    <circle cx="1012" cy="154" r="5"/>
+  </g>
+
+  <!-- outer card frame -->
+  <rect x="40" y="40" width="1120" height="550" rx="28" fill="none" stroke="#ffffff" stroke-opacity="0.07" stroke-width="1.5"/>
+
+  <!-- brand mark -->
+  <g transform="translate(84,84)">
+    <circle cx="26" cy="26" r="26" fill="#5e9fe8" opacity="0.15"/>
+    <path d="M10 27 H20 L24 18 L31 36 L36 24 L40 27 H50" fill="none" stroke="url(#accentGrad)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- title -->
+  <text x="84" y="225" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="800" fill="#ffffff">CodePulse</text>
+
+  <!-- subtitle -->
+  <text x="84" y="270" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#a9b4c2">Static code analysis &amp; visual health scoring — no AI, no external APIs</text>
+
+  <!-- feature chips row 1 -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700">
+    <rect x="84" y="310" width="246" height="38" rx="19" fill="#5e9fe8" fill-opacity="0.12" stroke="#5e9fe8" stroke-opacity="0.35"/>
+    <circle cx="106" cy="329" r="4" fill="#5e9fe8"/>
+    <text x="120" y="334" fill="#8fc0f5">Cyclomatic Complexity</text>
+
+    <rect x="346" y="310" width="210" height="38" rx="19" fill="#72e0c8" fill-opacity="0.12" stroke="#72e0c8" stroke-opacity="0.35"/>
+    <circle cx="368" cy="329" r="4" fill="#72e0c8"/>
+    <text x="382" y="334" fill="#9fe8d8">Duplicate Detection</text>
+  </g>
+
+  <!-- feature chips row 2 -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700">
+    <rect x="84" y="360" width="196" height="38" rx="19" fill="#72bc8f" fill-opacity="0.12" stroke="#72bc8f" stroke-opacity="0.35"/>
+    <circle cx="106" cy="379" r="4" fill="#72bc8f"/>
+    <text x="120" y="384" fill="#a3d9b8">Dependency Graph</text>
+
+    <rect x="296" y="360" width="186" height="38" rx="19" fill="#e10098" fill-opacity="0.12" stroke="#e10098" stroke-opacity="0.4"/>
+    <circle cx="318" cy="379" r="4" fill="#e10098"/>
+    <text x="332" y="384" fill="#f286c7">GraphQL Support</text>
+  </g>
+
+  <!-- score ring -->
+  <g transform="translate(960,330)">
+    <circle r="92" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="15"/>
+    <circle r="92" fill="none" stroke="#72bc8f" stroke-width="15" stroke-linecap="round"
+            stroke-dasharray="532 578" transform="rotate(-90)"/>
+    <text text-anchor="middle" y="8" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="800" fill="#ffffff">92</text>
+    <text text-anchor="middle" y="40" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#8f98a3">/ 100</text>
+  </g>
+  <text x="960" y="456" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#72bc8f">Healthy</text>
+
+  <!-- footer -->
+  <line x1="84" y1="512" x2="1116" y2="512" stroke="#ffffff" stroke-opacity="0.08"/>
+  <text x="84" y="546" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#5e9fe8">pouriyaparniyan.ir</text>
+  <text x="1116" y="546" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#6b7280">Open-source · Node.js · Express · No build step</text>
+</svg>

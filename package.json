@@ -1,0 +1,20 @@
+{
+  "name": "codepulse",
+  "version": "1.0.0",
+  "description": "CodePulse — a static code-health analyzer with a visual dashboard: complexity, duplication, dependency graph, GraphQL schema and Graphify knowledge-graph insights. No AI, no external APIs, no build step.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.26.0",
+    "adm-zip": "^0.5.16",
+    "express": "^4.21.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "author": "Pouriya Parniyan (https://pouriyaparniyan.ir)",
+  "license": "MIT"
+}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="CodePulse">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#171a20"/>
+      <stop offset="100%" stop-color="#0d0f13"/>
+    </linearGradient>
+    <linearGradient id="pulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5e9fe8"/>
+      <stop offset="100%" stop-color="#72e0c8"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bgGrad)"/>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="none" stroke="#5e9fe8" stroke-opacity="0.18" stroke-width="1.5"/>
+
+  <!-- code bracket accents -->
+  <path d="M20 22 L13 32 L20 42" fill="none" stroke="#8aa0b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>
+  <path d="M44 22 L51 32 L44 42" fill="none" stroke="#8aa0b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/>
+
+  <!-- heartbeat / health pulse line -->
+  <path d="M15 33 H24 L28 24 L34 42 L38 30 L41 33 H49"
+        fill="none" stroke="url(#pulseGrad)" stroke-width="3.4"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <circle cx="49" cy="33" r="2.6" fill="#72e0c8"/>
+</svg>

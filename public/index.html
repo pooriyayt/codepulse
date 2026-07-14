@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CodePulse</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="alternate icon" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+
+  <!-- Social / link preview (Open Graph + Twitter Card) -->
+  <meta name="description" content="CodePulse analyzes your codebase and shows complexity, duplication, dependency graphs and a weighted health score — no AI, no external APIs.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CodePulse">
+  <meta property="og:title" content="CodePulse — Static Code Analysis & Health Score">
+  <meta property="og:description" content="Upload a ZIP or a folder and get an instant visual health report: complexity hotspots, duplicate code, a dependency graph, and a weighted health score. 100% static analysis — no AI, no external APIs.">
+  <meta property="og:url" content="https://codepulse.pouriyaparniyan.ir/">
+  <meta property="og:image" content="https://codepulse.pouriyaparniyan.ir/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="CodePulse — static code analysis banner">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CodePulse">
+  <meta name="twitter:description" content="Static code analysis dashboard — complexity, duplication, dependency graphs & health score. No AI, no external APIs.">
+  <meta name="twitter:image" content="https://codepulse.pouriyaparniyan.ir/og-banner.png">
+
+  <!-- Fonts & icons via CDN - no build step required -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+  <link rel="stylesheet" href="css/style.css?v=7">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+  <div class="bg-orbs" aria-hidden="true"><span class="orb orb-a"></span><span class="orb orb-b"></span><span class="orb orb-c"></span></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><i class="fa-solid fa-heart-pulse"></i></span>
+      <span data-i18n="brand">CodePulse</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="shareBtn" class="btn btn-ghost" hidden><i class="fa-solid fa-share-nodes"></i>&nbsp;<span data-i18n="shareBtn">Share</span></button>
+      <button id="newAnalysisBtn" class="btn btn-ghost" hidden><i class="fa-solid fa-rotate-left"></i>&nbsp;<span data-i18n="newAnalysis">New analysis</span></button>
+      <button id="langBtn" class="btn btn-icon btn-lang" aria-label="Switch language" title="English / Persian">
+        <i class="fa-solid fa-language"></i><span id="langLabel" class="lang-label">&#1601;&#1575;</span>
+      </button>
+      <div class="theme-menu-wrap">
+        <button id="themeBtn" class="btn btn-icon" aria-label="Choose color theme" title="Theme" aria-haspopup="true">
+          <i class="fa-solid fa-palette"></i>
+        </button>
+        <div id="themeMenu" class="theme-menu" hidden role="menu" aria-label="Color themes">
+          <span class="theme-menu-label">Theme</span>
+          <button class="theme-option" data-theme-choice="dark" role="menuitem"><span class="theme-swatch" style="--sw: linear-gradient(135deg, #191919 50%, #5e9fe8 50%)"></span><i class="fa-solid fa-moon theme-icon" aria-hidden="true"></i><span data-i18n="theme.dark">Dark</span></button>
+          <button class="theme-option" data-theme-choice="light" role="menuitem"><span class="theme-swatch" style="--sw: linear-gradient(135deg, #ffffff 50%, #2783de 50%)"></span><i class="fa-solid fa-sun theme-icon" aria-hidden="true"></i><span data-i18n="theme.light">Light</span></button>
+          <button class="theme-option" data-theme-choice="midnight" role="menuitem"><span class="theme-swatch" style="--sw: linear-gradient(135deg, #0f0d1d 50%, #8b7cf8 50%)"></span><i class="fa-solid fa-cloud-moon theme-icon" aria-hidden="true"></i><span data-i18n="theme.midnight">Midnight</span></button>
+          <button class="theme-option" data-theme-choice="ocean" role="menuitem"><span class="theme-swatch" style="--sw: linear-gradient(135deg, #081820 50%, #2dd4bf 50%)"></span><i class="fa-solid fa-water theme-icon" aria-hidden="true"></i><span data-i18n="theme.ocean">Ocean</span></button>
+          <button class="theme-option" data-theme-choice="sunset" role="menuitem"><span class="theme-swatch" style="--sw: linear-gradient(135deg, #1c1210 50%, #f59e0b 50%)"></span><i class="fa-solid fa-mountain-sun theme-icon" aria-hidden="true"></i><span data-i18n="theme.sunset">Sunset</span></button>
+          <button class="theme-option" data-theme-choice="nord" role="menuitem"><span class="theme-swatch" style="--sw: linear-gradient(135deg, #2e3440 50%, #88c0d0 50%)"></span><i class="fa-solid fa-snowflake theme-icon" aria-hidden="true"></i><span data-i18n="theme.nord">Nord</span></button>
+          <button class="theme-option" data-theme-choice="dracula" role="menuitem"><span class="theme-swatch" style="--sw: linear-gradient(135deg, #282a36 50%, #bd93f9 50%)"></span><i class="fa-solid fa-ghost theme-icon" aria-hidden="true"></i><span data-i18n="theme.dracula">Dracula</span></button>
+          <button class="theme-option" data-theme-choice="solarized" role="menuitem"><span class="theme-swatch" style="--sw: linear-gradient(135deg, #002b36 50%, #2aa198 50%)"></span><i class="fa-solid fa-circle-half-stroke theme-icon" aria-hidden="true"></i><span data-i18n="theme.solarized">Solarized</span></button>
+          <button class="theme-option" data-theme-choice="glass" role="menuitem"><span class="theme-swatch" style="--sw: linear-gradient(135deg, #eef1f6 50%, #0a84ff 50%)"></span><i class="fa-solid fa-gem theme-icon" aria-hidden="true"></i><span data-i18n="theme.glass">Glass</span></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ============ Upload view ============ -->
+    <section id="uploadView" class="view">
+      <div class="hero">
+        <h1 data-i18n="hero.title">How healthy is your codebase?</h1>
+        <p class="hero-sub" data-i18n="hero.sub">Upload a project and get an instant static-analysis report: cyclomatic complexity, duplicate code, dependency cycles, and GraphQL schema insights. Everything runs locally &mdash; no AI, no external APIs.</p>
+      </div>
+
+      <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Upload a ZIP file of your project">
+        <span class="dz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+        <p class="dropzone-title" data-i18n-html="drop.title">Drop a <strong>.zip</strong> of your project here</p>
+        <p class="dropzone-sub" data-i18n="drop.sub">or click to choose a file &middot; JS / TS / GraphQL &middot; up to 100 MB</p>
+        <input type="file" id="fileInput" accept=".zip,application/zip,application/x-zip-compressed" hidden>
+      </div>
+
+      <div class="picker-row">
+        <button id="folderBtn" class="btn" type="button">
+          <i class="fa-solid fa-folder-open"></i>&nbsp;<span data-i18n="folderBtn">Choose a folder from your computer</span>
+        </button>
+        <input type="file" id="folderInput" webkitdirectory multiple hidden>
+      </div>
+      <p class="picker-hint" data-i18n="folderHint">Heavy folders like node_modules and .git are skipped automatically before upload.</p>
+
+      <div class="divider-label"><span data-i18n="divider">or analyze a folder on the server</span></div>
+
+      <form id="pathForm" class="path-form">
+        <input type="text" id="pathInput" placeholder="e.g. /home/user/projects/my-app  or  C:\projects\my-app" data-i18n-ph="path.ph" autocomplete="off" spellcheck="false" aria-label="Server folder path">
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass-chart"></i>&nbsp;<span data-i18n="analyzeBtn">Analyze path</span></button>
+      </form>
+      <p class="path-hint" data-i18n="path.hint">The path must exist on the machine running this app (useful when running locally).</p>
+
+      <div id="uploadError" class="error-banner" hidden></div>
+
+      <div class="feature-grid">
+        <div class="feature"><i class="fa-solid fa-code-branch feat-i"></i><span data-i18n="f1">Cyclomatic complexity per function</span></div>
+        <div class="feature"><i class="fa-solid fa-ruler-vertical feat-i"></i><span data-i18n="f2">Function &amp; file length checks</span></div>
+        <div class="feature"><i class="fa-solid fa-clone feat-i"></i><span data-i18n="f3">Duplicate code detection</span></div>
+        <div class="feature"><i class="fa-solid fa-rotate feat-i"></i><span data-i18n="f4">Circular dependency detection</span></div>
+        <div class="feature"><i class="fa-solid fa-circle-nodes feat-i"></i><span data-i18n="f5">GraphQL schema analysis</span></div>
+        <div class="feature"><i class="fa-solid fa-brain feat-i"></i><span data-i18n="f6">Graphify knowledge graph viewer</span></div>
+      </div>
+    </section>
+
+    <!-- ============ Loading view ============ -->
+    <section id="loadingView" class="view" hidden>
+      <div class="loading-box">
+        <div class="spinner" aria-hidden="true"></div>
+        <p id="loadingText" data-i18n="loading.text">Analyzing project&hellip;</p>
+        <p class="loading-sub" data-i18n="loading.sub">Parsing files, measuring complexity, hashing blocks, building graphs.</p>
+        <div id="loadingProgressWrap" class="progress-wrap" hidden>
+          <div class="progress-track"><div id="loadingProgressFill" class="progress-fill"></div></div>
+          <div class="progress-meta">
+            <span id="loadingPhaseLabel">Uploading</span>
+            <span id="loadingPercentLabel">0%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Dashboard view ============ -->
+    <section id="dashboardView" class="view" hidden>
+      <div class="project-meta">
+        <h1 id="projectName">project</h1>
+        <span id="projectMetaInfo" class="meta-info"></span>
+      </div>
+
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="overview" role="tab"><i class="fa-solid fa-gauge-high"></i>&nbsp;<span data-i18n="tab.overview">Overview</span></button>
+        <button class="tab" data-tab="files" role="tab"><i class="fa-solid fa-file-code"></i>&nbsp;<span data-i18n="tab.files">Files</span></button>
+        <button class="tab" data-tab="dependencies" role="tab"><i class="fa-solid fa-diagram-project"></i>&nbsp;<span data-i18n="tab.deps">Dependencies</span></button>
+        <button class="tab" data-tab="duplicates" role="tab"><i class="fa-solid fa-clone"></i>&nbsp;<span data-i18n="tab.dups">Duplicates</span></button>
+        <button class="tab tab-graphql" data-tab="graphql" id="graphqlTabBtn" role="tab" hidden><i class="fa-solid fa-circle-nodes"></i>&nbsp;<span data-i18n="tab.gql">GraphQL Schema</span></button>
+        <button class="tab tab-kg" data-tab="knowledge" id="kgTabBtn" role="tab" hidden><i class="fa-solid fa-brain"></i>&nbsp;<span data-i18n="tab.kg">Knowledge Graph</span></button>
+        <button class="tab tab-guide" data-tab="guide" role="tab"><i class="fa-solid fa-circle-question"></i>&nbsp;<span data-i18n="tab.guide">Guide</span></button>
+      </nav>
+
+      <!-- Overview -->
+      <div id="tab-overview" class="tab-panel active">
+        <div class="overview-grid">
+          <div class="card score-card">
+            <div class="score-ring" id="scoreRing">
+              <span id="scoreValue" class="score-value">0</span>
+              <span class="score-max">/ 100</span>
+            </div>
+            <div class="score-side">
+              <span id="scoreBadge" class="badge">&nbsp;</span>
+              <p class="score-caption" data-i18n="score.caption">Overall health score &mdash; weighted mix of complexity, duplication, size, dependencies and nesting.</p>
+            </div>
+          </div>
+          <div class="stat-cards" id="statCards"></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <h2><i class="fa-solid fa-chart-pie card-i"></i><span data-i18n="ov.breakdown">Score breakdown</span></h2>
+            <div id="scoreComponents" class="score-components"></div>
+          </div>
+          <div class="card">
+            <h2><i class="fa-solid fa-chart-column card-i"></i><span data-i18n="ov.dist">Complexity distribution</span></h2>
+            <p class="card-sub" data-i18n="ov.distSub">Functions per cyclomatic-complexity bucket</p>
+            <div class="chart-wrap"><canvas id="histogramChart" height="210"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2><i class="fa-solid fa-triangle-exclamation card-i"></i><span data-i18n="ov.risky">Highest-complexity functions</span></h2>
+          <p class="card-sub" data-i18n="ov.riskySub">Functions with cyclomatic complexity above 10 are flagged as high risk</p>
+          <div class="table-scroll">
+            <table class="data-table" id="riskyFunctionsTable">
+              <thead><tr><th data-i18n="th.fn">Function</th><th data-i18n="th.file">File</th><th class="num" data-i18n="th.line">Line</th><th class="num" data-i18n="th.cc">Complexity</th><th class="num" data-i18n="th.lines">Lines</th><th class="num" data-i18n="th.nesting">Nesting</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="parseErrorsCard" class="card" hidden>
+          <h2><i class="fa-solid fa-bug card-i"></i><span data-i18n="ov.parse">Parse errors</span></h2>
+          <p class="card-sub" data-i18n="ov.parseSub">These files could not be fully parsed and may be partially analyzed</p>
+          <ul id="parseErrorsList" class="plain-list"></ul>
+        </div>
+      </div>
+
+      <!-- Files -->
+      <div id="tab-files" class="tab-panel">
+        <div class="card">
+          <div class="card-header-row">
+            <div>
+              <h2><i class="fa-solid fa-file-code card-i"></i><span data-i18n="tab.files">Files</span></h2>
+              <p class="card-sub" data-i18n="files.sub">Click a column header to sort. Flagged files exceed at least one threshold.</p>
+            </div>
+            <input type="search" id="fileFilter" class="filter-input" placeholder="Filter by path&hellip;" data-i18n-ph="files.filter" aria-label="Filter files">
+          </div>
+          <div class="table-scroll">
+            <table class="data-table sortable" id="filesTable">
+              <thead>
+                <tr>
+                  <th data-key="path" data-type="string" data-i18n="th.file">File</th>
+                  <th data-key="lines" data-type="number" class="num" data-i18n="th.lines">Lines</th>
+                  <th data-key="functionCount" data-type="number" class="num" data-i18n="th.functions">Functions</th>
+                  <th data-key="avgComplexity" data-type="number" class="num" data-i18n="th.avgcc">Avg CC</th>
+                  <th data-key="maxComplexity" data-type="number" class="num" data-i18n="th.maxcc">Max CC</th>
+                  <th data-key="maxNesting" data-type="number" class="num" data-i18n="th.nesting">Nesting</th>
+                  <th data-key="riskyFunctions" data-type="number" class="num" data-i18n="th.riskyfns">Risky fns</th>
+                  <th data-key="warningCount" data-type="number" class="num" data-i18n="th.warnings">Warnings</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dependencies -->
+      <div id="tab-dependencies" class="tab-panel">
+        <div class="card">
+          <h2><i class="fa-solid fa-diagram-project card-i"></i><span data-i18n="deps.title">File dependency graph</span></h2>
+          <p class="card-sub"><span data-i18n="deps.sub">Built from import / require statements. Drag to pan, scroll to zoom, click a node for details.</span> <span class="legend"><span class="legend-dot" style="background:var(--accent)"></span><span data-i18n="deps.normal">normal</span> <span class="legend-dot" style="background:var(--red)"></span><span data-i18n="deps.cycle">in a cycle</span></span></p>
+          <div id="depGraphNotice" class="notice" hidden></div>
+          <div id="depGraph" class="graph-canvas"></div>
+          <div id="nodeDetails" class="node-details" hidden></div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <h2><i class="fa-solid fa-rotate card-i"></i><span data-i18n="deps.cycles">Circular dependencies</span></h2>
+            <div id="cyclesList"></div>
+          </div>
+          <div class="card">
+            <h2><i class="fa-solid fa-box-open card-i"></i><span data-i18n="deps.ext">External packages</span></h2>
+            <p class="card-sub" data-i18n="deps.extSub">Most-imported third-party modules</p>
+            <div id="externalDeps"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Duplicates -->
+      <div id="tab-duplicates" class="tab-panel">
+        <div class="card">
+          <h2><i class="fa-solid fa-clone card-i"></i><span data-i18n="dups.title">Duplicate code</span></h2>
+          <p class="card-sub" id="duplicatesSummary"></p>
+          <div id="duplicatesList"></div>
+        </div>
+      </div>
+
+      <!-- GraphQL -->
+      <div id="tab-graphql" class="tab-panel graphql-panel">
+        <div class="gql-hero">
+          <div class="gql-hero-text">
+            <h2><i class="fa-solid fa-circle-nodes"></i> <span data-i18n="tab.gql">GraphQL Schema</span></h2>
+            <p id="gqlSources" class="gql-sub"></p>
+          </div>
+          <div class="gql-chips" id="gqlChips"></div>
+        </div>
+
+        <div class="card gql-card">
+          <h2><i class="fa-solid fa-share-nodes card-i"></i><span data-i18n="gql.rel">Type relation graph</span></h2>
+          <p class="card-sub" data-i18n="gql.relSub">Which type references which, through its fields. Click a node to see its fields.</p>
+          <div id="gqlGraph" class="graph-canvas gql-graph"></div>
+          <div id="gqlNodeDetails" class="node-details gql-node-details" hidden></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card gql-card">
+            <h2><i class="fa-solid fa-bolt card-i"></i><span data-i18n="gql.ops">Operations</span></h2>
+            <div id="gqlOperations"></div>
+          </div>
+          <div class="card gql-card">
+            <h2><i class="fa-solid fa-triangle-exclamation card-i"></i><span data-i18n="gql.warn">Schema warnings</span></h2>
+            <div id="gqlWarnings"></div>
+          </div>
+        </div>
+
+        <div class="card gql-card">
+          <h2><i class="fa-solid fa-shapes card-i"></i><span data-i18n="gql.types">Types</span></h2>
+          <div class="table-scroll">
+            <table class="data-table" id="gqlTypesTable">
+              <thead><tr><th data-i18n="th.type">Type</th><th data-i18n="th.kind">Kind</th><th class="num" data-i18n="th.fields">Fields</th><th data-i18n="th.defin">Defined in</th><th data-i18n="th.notes">Notes</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Knowledge Graph (Graphify graph.json etc.) -->
+      <div id="tab-knowledge" class="tab-panel">
+        <div class="kg-hero">
+          <div>
+            <h2><i class="fa-solid fa-brain"></i> <span data-i18n="tab.kg">Knowledge Graph</span></h2>
+            <p id="kgSources" class="kg-sub"></p>
+          </div>
+          <div class="kg-chips" id="kgChips"></div>
+        </div>
+
+        <div class="card kg-card">
+          <h2><i class="fa-solid fa-hexagon-nodes card-i"></i><span data-i18n="kg.concept">Concept graph</span></h2>
+          <p class="card-sub" data-i18n="kg.conceptSub">Nodes are code concepts (functions, classes, files, docs); colors are communities. Dashed edges were inferred rather than extracted from source. Drag to pan, scroll to zoom, click a node for details.</p>
+          <div id="kgNotice" class="notice" hidden></div>
+          <div class="kg-toolbar">
+            <button id="kgLoadFullBtn" class="btn btn-ghost btn-sm" hidden><i class="fa-solid fa-maximize"></i>&nbsp;<span data-i18n="kg.loadFull">Load full graph</span></button>
+            <button id="kgExportBtn" class="btn btn-ghost btn-sm" hidden><i class="fa-solid fa-camera-retro"></i>&nbsp;<span data-i18n="kg.exportBtn">Export as image</span></button>
+          </div>
+          <div id="kgGraph" class="graph-canvas kg-graph"></div>
+          <div id="kgNodeDetails" class="node-details" hidden></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card kg-card">
+            <h2><i class="fa-solid fa-crown card-i"></i><span data-i18n="kg.god">God nodes</span></h2>
+            <p class="card-sub" data-i18n="kg.godSub">The most connected concepts &mdash; everything flows through these</p>
+            <div id="kgGodNodes"></div>
+          </div>
+          <div class="card kg-card">
+            <h2><i class="fa-solid fa-diagram-next card-i"></i><span data-i18n="kg.rels">Relation types</span></h2>
+            <p class="card-sub" data-i18n="kg.relsSub">Edge counts by relationship kind</p>
+            <div id="kgRelations"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guide -->
+      <div id="tab-guide" class="tab-panel">
+        <div class="guide-hero">
+          <h2><i class="fa-solid fa-circle-question"></i> <span data-i18n="guide.title">Guide &mdash; what everything means</span></h2>
+          <p class="guide-intro" data-i18n="guide.intro">A quick tour of every metric and section in this dashboard, so you always know what you are looking at.</p>
+        </div>
+        <div class="guide-grid">
+          <div class="guide-item">
+            <span class="g-icon"><i class="fa-solid fa-heart-pulse"></i></span>
+            <div><h3 data-i18n="g.score.t">Health score (0&ndash;100)</h3><p data-i18n="g.score.d">A weighted mix: complexity 30%, duplication 25%, file size 20%, dependencies 15%, nesting 10%. 80 and above is healthy (green), 60&ndash;79 needs attention (yellow), below 60 is critical (red).</p></div>
+          </div>
+          <div class="guide-item">
+            <span class="g-icon"><i class="fa-solid fa-code-branch"></i></span>
+            <div><h3 data-i18n="g.cc.t">Cyclomatic complexity</h3><p data-i18n="g.cc.d">The number of independent paths through a function &mdash; every if, loop, case, &amp;&amp; or || adds one. Above 10 a function becomes hard to test and maintain; consider splitting it.</p></div>
+          </div>
+          <div class="guide-item">
+            <span class="g-icon"><i class="fa-solid fa-chart-column"></i></span>
+            <div><h3 data-i18n="g.hist.t">Complexity distribution</h3><p data-i18n="g.hist.d">A histogram of all functions grouped by complexity. A healthy project has most functions in the low buckets and only a few in the red zone.</p></div>
+          </div>
+          <div class="guide-item">
+            <span class="g-icon"><i class="fa-solid fa-ruler-vertical"></i></span>
+            <div><h3 data-i18n="g.size.t">Size warnings</h3><p data-i18n="g.size.d">Functions longer than 50 lines and files longer than 300 lines get flagged &mdash; long units of code are harder to read, review and reuse.</p></div>
+          </div>
+          <div class="guide-item">
+            <span class="g-icon"><i class="fa-solid fa-layer-group"></i></span>
+            <div><h3 data-i18n="g.nest.t">Nesting depth</h3><p data-i18n="g.nest.d">How deeply blocks (if / for / while&hellip;) are nested inside each other. More than 4 levels usually means the logic should be flattened or extracted.</p></div>
+          </div>
+          <div class="guide-item">
+            <span class="g-icon"><i class="fa-solid fa-clone"></i></span>
+            <div><h3 data-i18n="g.dup.t">Duplicate code</h3><p data-i18n="g.dup.d">Code blocks are normalized and hashed; identical 5-line windows across files are reported with exact file and line locations. Copy-paste means every bug must be fixed twice.</p></div>
+          </div>
+          <div class="guide-item">
+            <span class="g-icon"><i class="fa-solid fa-diagram-project"></i></span>
+            <div><h3 data-i18n="g.deps.t">Dependency graph &amp; cycles</h3><p data-i18n="g.deps.d">Each node is a file; each arrow is an import. Red nodes are part of a circular dependency (A needs B, B needs A) which makes code fragile and hard to refactor.</p></div>
+          </div>
+          <div class="guide-item guide-gql">
+            <span class="g-icon"><i class="fa-solid fa-circle-nodes"></i></span>
+            <div><h3 data-i18n="g.gql.t">GraphQL Schema tab</h3><p data-i18n="g.gql.d">Appears only when the project actually contains GraphQL: .graphql / .gql files, gql`` templates or introspection JSON. Shows types, queries, mutations, subscriptions, oversized types (more than 20 fields), missing resolvers and potential N+1 fields.</p></div>
+          </div>
+          <div class="guide-item guide-kg">
+            <span class="g-icon"><i class="fa-solid fa-brain"></i></span>
+            <div><h3 data-i18n="g.kg.t">Knowledge Graph tab</h3><p data-i18n="g.kg.d">Appears when the project contains a Graphify output (graphify-out/graph.json) or any JSON with nodes/edges arrays. Nodes are functions, classes and concepts; colors are community clusters; dashed edges are inferred; god nodes are the most connected concepts.</p></div>
+          </div>
+          <div class="guide-item">
+            <span class="g-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+            <div><h3 data-i18n="g.ui.t">Themes &amp; language</h3><p data-i18n="g.ui.d">Pick one of 5 themes from the palette button and switch between English and Persian with the language button &mdash; both choices are remembered on this device.</p></div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span data-i18n="footer.line1">Pure static analysis &mdash; runs entirely on this server. No AI, no external APIs.</span>
+    <span class="footer-credit" data-i18n-html="footer.credit">Made with <span class="heart">&#10084;</span> by <a href="https://pouriyaparniyan.ir" target="_blank" rel="noopener">Pouriya Parniyan</a> &copy; 2026 &mdash; MIT License</span>
+  </footer>
+
+
+  <div id="confirmModal" class="modal-overlay" hidden>
+    <div id="confirmBackdrop" class="modal-backdrop"></div>
+    <div class="modal confirm-modal" role="dialog" aria-modal="true" aria-label="Confirm">
+      <div class="modal-head">
+        <h2><i class="fa-solid fa-triangle-exclamation"></i> <span id="confirmTitle" data-i18n="confirm.title">Large folder selected</span></h2>
+        <button id="confirmCloseBtn" class="btn btn-icon" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p id="confirmMessage" class="modal-sub"></p>
+      <div class="confirm-actions">
+        <button id="confirmCancelBtn" class="btn btn-ghost" data-i18n="confirm.cancel">Cancel</button>
+        <button id="confirmOkBtn" class="btn btn-primary" data-i18n="confirm.continue">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="shareModal" class="modal-overlay" hidden>
+    <div id="shareBackdrop" class="modal-backdrop"></div>
+    <div class="modal share-modal" role="dialog" aria-modal="true" aria-label="Share project snapshot">
+      <div class="modal-head">
+        <h2><i class="fa-solid fa-share-nodes"></i> <span data-i18n="share.title">Share project snapshot</span></h2>
+        <button id="shareCloseBtn" class="btn btn-icon" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="modal-sub" data-i18n="share.subtitle">Pick a theme and download a shareable image of this report.</p>
+      <div class="share-canvas-wrap">
+        <canvas id="shareCanvas" width="1200" height="675"></canvas>
+      </div>
+      <div class="share-controls">
+        <div id="shareThemeSwatches" class="share-swatches" role="group" aria-label="Card theme">
+          <button class="share-swatch active" data-share-theme="dark" style="--sw: linear-gradient(135deg, #191919 50%, #5e9fe8 50%)"><i class="fa-solid fa-moon theme-icon" aria-hidden="true"></i><span data-i18n="theme.dark">Dark</span></button>
+          <button class="share-swatch" data-share-theme="light" style="--sw: linear-gradient(135deg, #ffffff 50%, #2783de 50%)"><i class="fa-solid fa-sun theme-icon" aria-hidden="true"></i><span data-i18n="theme.light">Light</span></button>
+          <button class="share-swatch" data-share-theme="midnight" style="--sw: linear-gradient(135deg, #0f0d1d 50%, #8b7cf8 50%)"><i class="fa-solid fa-cloud-moon theme-icon" aria-hidden="true"></i><span data-i18n="theme.midnight">Midnight</span></button>
+          <button class="share-swatch" data-share-theme="ocean" style="--sw: linear-gradient(135deg, #081820 50%, #2dd4bf 50%)"><i class="fa-solid fa-water theme-icon" aria-hidden="true"></i><span data-i18n="theme.ocean">Ocean</span></button>
+          <button class="share-swatch" data-share-theme="sunset" style="--sw: linear-gradient(135deg, #1c1210 50%, #f59e0b 50%)"><i class="fa-solid fa-mountain-sun theme-icon" aria-hidden="true"></i><span data-i18n="theme.sunset">Sunset</span></button>
+          <button class="share-swatch" data-share-theme="nord" style="--sw: linear-gradient(135deg, #2e3440 50%, #88c0d0 50%)"><i class="fa-solid fa-snowflake theme-icon" aria-hidden="true"></i><span data-i18n="theme.nord">Nord</span></button>
+          <button class="share-swatch" data-share-theme="dracula" style="--sw: linear-gradient(135deg, #282a36 50%, #bd93f9 50%)"><i class="fa-solid fa-ghost theme-icon" aria-hidden="true"></i><span data-i18n="theme.dracula">Dracula</span></button>
+          <button class="share-swatch" data-share-theme="solarized" style="--sw: linear-gradient(135deg, #002b36 50%, #2aa198 50%)"><i class="fa-solid fa-circle-half-stroke theme-icon" aria-hidden="true"></i><span data-i18n="theme.solarized">Solarized</span></button>
+          <button class="share-swatch" data-share-theme="glass" style="--sw: linear-gradient(135deg, #eef1f6 50%, #0a84ff 50%)"><i class="fa-solid fa-gem theme-icon" aria-hidden="true"></i><span data-i18n="theme.glass">Glass</span></button>
+        </div>
+        <button id="shareDownloadBtn" class="btn btn-primary"><i class="fa-solid fa-download"></i>&nbsp;<span data-i18n="share.download">Download PNG</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/i18n.js?v=7"></script>
+  <script src="js/dashboard.js?v=7"></script>
+  <script src="js/graphql.js?v=7"></script>
+  <script src="js/share.js?v=7"></script>
+  <script src="js/knowledge.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
+</body>
+</html>
