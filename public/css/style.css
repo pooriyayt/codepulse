@@ -471,6 +471,7 @@ input::placeholder { color: var(--text-faint); }
 .pill-orange { background: var(--orange-soft); color: var(--orange); }
 .pill-green { background: var(--green-soft); color: var(--green); }
 .pill-gql { background: var(--gql-soft); color: var(--gql-text); }
+.pill-lang { background: var(--border); color: var(--text-secondary); font-family: Menlo, Consolas, monospace; font-size: 10px; letter-spacing: 0.02em; }
 
 .cell-warn { color: var(--orange); font-weight: 600; }
 .cell-bad { color: var(--red); font-weight: 600; }

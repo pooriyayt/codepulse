@@ -21,7 +21,8 @@ CodePulse analyzes a code project — uploaded as a ZIP, picked as a folder from
 ### ✨ Features
 
 - **Health score (0–100)** — weighted mix of complexity, duplication, file size, dependency health, and nesting, with a green / yellow / red grade.
-- **Cyclomatic complexity** per function via `@babel/parser` (JS, JSX, TS, TSX). Functions with CC > 10 are flagged as high risk.
+- **Multi-language analysis** — JavaScript / JSX / TypeScript / TSX via `@babel/parser`, plus heuristic (no-dependency) analyzers for **Python**, **PHP**, **HTML** and **CSS**. Every language reports cyclomatic complexity, function size and nesting depth on the same scale; functions with CC > 10 are flagged as high risk.
+- **HTML & CSS checks** — DOM nesting depth, `<img>` tags missing `alt` text, duplicate `id` attributes, duplicate CSS selectors, `!important` overuse, and high-specificity selectors. Inline `<script>`/`<style>` blocks inside HTML are analyzed too.
 - **Size warnings** — functions longer than 50 lines, files longer than 300 lines.
 - **Deep nesting detection** — blocks nested more than 4 levels deep.
 - **Duplicate code detection** — normalized sliding-window block hashing finds copy-pasted fragments with exact file + line locations.
@@ -49,6 +50,18 @@ Requires Node.js 16+. The frontend is plain HTML/CSS/JS served by Express; Chart
 2. In cPanel open **Setup Node.js App** → *Create Application*: Node 16+, application root `codepulse`, startup file `app.js`.
 3. Click **Run NPM Install**, then **Restart**. cPanel injects `PORT` automatically.
 4. Open the application URL — done.
+
+### 🌍 Supported languages
+
+| Language | How it's analyzed |
+| --- | --- |
+| JavaScript / JSX / TypeScript / TSX | Real AST via `@babel/parser` |
+| Python | Indentation-based heuristic parser (no dependency) |
+| PHP | Brace-depth heuristic parser (no dependency) |
+| HTML | Tag-stack scanner; inline `<script>`/`<style>` delegate to the JS/CSS analyzers |
+| CSS / SCSS | Rule/selector scanner (duplicate selectors, specificity, `!important`) |
+
+Python, PHP, HTML and CSS support is heuristic rather than a full-grammar parser (no new dependencies were added to keep this build-step-free), so results are a close approximation rather than a byte-perfect AST — good enough to spot real hotspots, but treat edge cases (e.g. unusual string/heredoc syntax) as approximate.
 
 ### 📊 Thresholds
 
@@ -97,7 +110,8 @@ Issues and pull requests are welcome! The codebase is small and dependency-light
 ### ✨ امکانات
 
 - **امتیاز سلامت (۰ تا ۱۰۰)** — ترکیب وزن‌دار پیچیدگی، کد تکراری، حجم فایل‌ها، سلامت وابستگی‌ها و تودرتویی، با درجه سبز / زرد / قرمز.
-- **پیچیدگی سیکلوماتیک** هر تابع با `@babel/parser` (پشتیبانی JS، JSX، TS، TSX) — توابع با پیچیدگی بیشتر از ۱۰ به‌عنوان پرریسک علامت می‌خورند.
+- **تحلیل چند زبانه** — جاوااسکریپت / JSX / تایپ‌اسکریپت / TSX با `@babel/parser`، به‌همراه تحلیل‌گرهای تقریبی (بدون هیچ وابستگی جدید) برای **پایتون**، **PHP**، **HTML** و **CSS**. همه زبان‌ها پیچیدگی سیکلوماتیک، حجم تابع و عمق تودرتویی را با یک معیار یکسان گزارش می‌کنند؛ توابع با پیچیدگی بیشتر از ۱۰ پرریسک علامت می‌خورند.
+- **بررسی HTML و CSS** — عمق تودرتویی DOM، تگ‌های `<img>` بدون `alt`، شناسه (`id`) تکراری، سلکتور CSS تکراری، استفاده زیاد از `important!` و سلکتورهای با اختصاصیت بالا. بلوک‌های `<script>`/`<style>` داخل HTML هم تحلیل می‌شوند.
 - **هشدار حجم** — توابع بلندتر از ۵۰ خط و فایل‌های بلندتر از ۳۰۰ خط.
 - **تشخیص تودرتویی عمیق** — بلاک‌های بیشتر از ۴ سطح.
 - **تشخیص کد تکراری** — با هش‌کردن بلاک‌های نرمال‌شده، به‌همراه آدرس دقیق فایل و خط.
@@ -125,6 +139,18 @@ npm start
 2. در cPanel بخش **Setup Node.js App** را باز کنید → *Create Application*: نسخه Node حداقل ۱۶، ریشه اپلیکیشن `codepulse`، فایل استارتاپ `app.js`.
 3. روی **Run NPM Install** و بعد **Restart** بزنید. متغیر `PORT` خودکار تنظیم می‌شود.
 4. آدرس اپلیکیشن را باز کنید — تمام!
+
+### 🌍 زبان‌های پشتیبانی‌شده
+
+| زبان | نحوه تحلیل |
+| --- | --- |
+| جاوااسکریپت / JSX / تایپ‌اسکریپت / TSX | AST واقعی با `@babel/parser` |
+| پایتون | پارسر تقریبی مبتنی بر تورفتگی (بدون وابستگی جدید) |
+| PHP | پارسر تقریبی مبتنی بر عمق آکولاد (بدون وابستگی جدید) |
+| HTML | اسکنر پشته‌ای تگ‌ها؛ بلوک‌های `<script>`/`<style>` داخلی به تحلیل‌گر JS/CSS سپرده می‌شوند |
+| CSS / SCSS | اسکنر سلکتور/قاعده (سلکتور تکراری، اختصاصیت، `important!`) |
+
+پشتیبانی از پایتون، PHP، HTML و CSS تقریبی است نه یک پارسر کامل گرامری (برای اینکه بدون هیچ وابستگی و مرحله Build جدیدی باقی بماند)، پس نتایج تخمینی نزدیک هستند نه AST بایت‌به‌بایت — برای پیدا کردن نقاط داغ واقعی کافی است، اما موارد نامتعارف (مثل رشته‌ها/heredoc غیرمعمول) را تقریبی در نظر بگیرید.
 
 ### 📊 آستانه‌ها
 

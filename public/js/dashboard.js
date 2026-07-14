@@ -35,6 +35,13 @@ window.Dashboard = (function () {
     return idx === -1 ? p : p.slice(idx + 1);
   }
 
+  const LANG_LABELS = { javascript: "JS", typescript: "TS", python: "PY", php: "PHP", html: "HTML", css: "CSS" };
+
+  function langBadge(language) {
+    const label = LANG_LABELS[language] || (language || "").toUpperCase();
+    return `<span class="pill pill-lang">${esc(label)}</span>`;
+  }
+
   // ---------- overview ----------
 
   function renderScore() {
@@ -121,7 +128,7 @@ window.Dashboard = (function () {
     const tbody = document.querySelector("#riskyFunctionsTable tbody");
     const top = report.functions.slice(0, 15);
     if (top.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">No functions found.</div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">No functions found.</div></td></tr>`;
       return;
     }
     tbody.innerHTML = top
@@ -129,6 +136,7 @@ window.Dashboard = (function () {
         const ccClass = f.complexity > 10 ? "cell-bad" : f.complexity > 5 ? "cell-warn" : "";
         return `<tr>
           <td class="wrap">${esc(f.name)}${f.risky ? '<span class="pill pill-red">high risk</span>' : ""}</td>
+          <td>${langBadge(f.language)}</td>
           <td class="file-path wrap">${esc(f.file)}</td>
           <td class="num">${f.line}</td>
           <td class="num ${ccClass}">${f.complexity}</td>
@@ -137,6 +145,36 @@ window.Dashboard = (function () {
         </tr>`;
       })
       .join("");
+  }
+
+  function renderMarkupStyleIssues() {
+    const card = document.getElementById("markupStyleCard");
+    const list = document.getElementById("markupStyleList");
+    const markupIssues = report.markupIssues || [];
+    const styleIssues = report.styleIssues || [];
+    if (markupIssues.length === 0 && styleIssues.length === 0) {
+      card.hidden = true;
+      return;
+    }
+    card.hidden = false;
+
+    const markupItems = markupIssues.slice(0, 25).map((issue) => {
+      if (issue.type === "missing-alt") {
+        return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; line ${issue.line}: &lt;img&gt; is missing alt text</li>`;
+      }
+      return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; duplicate id "${esc(issue.id)}" (lines ${issue.lines.join(", ")})</li>`;
+    });
+    const styleItems = styleIssues.slice(0, 25).map((issue) => {
+      if (issue.type === "duplicate-selector") {
+        return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; line ${issue.line}: duplicate selector "${esc(issue.selector)}" (first seen line ${issue.firstLine})</li>`;
+      }
+      if (issue.type === "high-specificity") {
+        return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; line ${issue.line}: high-specificity selector "${esc(issue.selector)}" (score ${issue.specificity})</li>`;
+      }
+      return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; line ${issue.line}: !important declaration</li>`;
+    });
+
+    list.innerHTML = markupItems.concat(styleItems).join("");
   }
 
   function renderParseErrors() {
@@ -179,7 +217,7 @@ window.Dashboard = (function () {
     });
 
     if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">No files match.</div></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">No files match.</div></td></tr>`;
       return;
     }
 
@@ -193,6 +231,7 @@ window.Dashboard = (function () {
         const warnTitle = f.warnings.length ? ` title="${esc(f.warnings.join("\n"))}"` : "";
         return `<tr${warnTitle}>
           <td class="file-path wrap">${esc(f.path)}${pills.join("")}</td>
+          <td>${langBadge(f.language)}</td>
           <td class="num ${f.isLongFile ? "cell-warn" : ""}">${fmt(f.lines)}</td>
           <td class="num">${f.functionCount}</td>
           <td class="num">${f.avgComplexity}</td>
@@ -389,6 +428,7 @@ window.Dashboard = (function () {
     renderStatCards();
     renderHistogram();
     renderRiskyFunctions();
+    renderMarkupStyleIssues();
     renderParseErrors();
     renderFilesTable();
     if (!filesTableBound) {

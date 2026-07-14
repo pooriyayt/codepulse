@@ -177,7 +177,7 @@
           <p class="card-sub" data-i18n="ov.riskySub">Functions with cyclomatic complexity above 10 are flagged as high risk</p>
           <div class="table-scroll">
             <table class="data-table" id="riskyFunctionsTable">
-              <thead><tr><th data-i18n="th.fn">Function</th><th data-i18n="th.file">File</th><th class="num" data-i18n="th.line">Line</th><th class="num" data-i18n="th.cc">Complexity</th><th class="num" data-i18n="th.lines">Lines</th><th class="num" data-i18n="th.nesting">Nesting</th></tr></thead>
+              <thead><tr><th data-i18n="th.fn">Function</th><th data-i18n="th.lang">Lang</th><th data-i18n="th.file">File</th><th class="num" data-i18n="th.line">Line</th><th class="num" data-i18n="th.cc">Complexity</th><th class="num" data-i18n="th.lines">Lines</th><th class="num" data-i18n="th.nesting">Nesting</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -187,6 +187,12 @@
           <h2><i class="fa-solid fa-bug card-i"></i><span data-i18n="ov.parse">Parse errors</span></h2>
           <p class="card-sub" data-i18n="ov.parseSub">These files could not be fully parsed and may be partially analyzed</p>
           <ul id="parseErrorsList" class="plain-list"></ul>
+        </div>
+
+        <div id="markupStyleCard" class="card" hidden>
+          <h2><i class="fa-solid fa-code card-i"></i><span data-i18n="ov.markup">Markup &amp; style issues</span></h2>
+          <p class="card-sub" data-i18n="ov.markupSub">Heuristic checks for HTML and CSS files: missing alt text, duplicate ids, duplicate selectors, !important overuse and high-specificity selectors.</p>
+          <ul id="markupStyleList" class="plain-list"></ul>
         </div>
       </div>
 
@@ -205,6 +211,7 @@
               <thead>
                 <tr>
                   <th data-key="path" data-type="string" data-i18n="th.file">File</th>
+                  <th data-key="language" data-type="string" data-i18n="th.lang">Lang</th>
                   <th data-key="lines" data-type="number" class="num" data-i18n="th.lines">Lines</th>
                   <th data-key="functionCount" data-type="number" class="num" data-i18n="th.functions">Functions</th>
                   <th data-key="avgComplexity" data-type="number" class="num" data-i18n="th.avgcc">Avg CC</th>
