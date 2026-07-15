@@ -35,7 +35,11 @@ window.Dashboard = (function () {
     return idx === -1 ? p : p.slice(idx + 1);
   }
 
-  const LANG_LABELS = { javascript: "JS", typescript: "TS", python: "PY", php: "PHP", html: "HTML", css: "CSS" };
+  const LANG_LABELS = {
+    javascript: "JS", typescript: "TS", python: "PY", php: "PHP", html: "HTML", css: "CSS",
+    go: "GO", rust: "RS", java: "JAVA", c: "C", cpp: "C++", csharp: "C#",
+    kotlin: "KT", swift: "SWIFT", ruby: "RB", sql: "SQL",
+  };
 
   function langBadge(language) {
     const label = LANG_LABELS[language] || (language || "").toUpperCase();
@@ -159,19 +163,32 @@ window.Dashboard = (function () {
     card.hidden = false;
 
     const markupItems = markupIssues.slice(0, 25).map((issue) => {
-      if (issue.type === "missing-alt") {
-        return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; line ${issue.line}: &lt;img&gt; is missing alt text</li>`;
+      let text;
+      switch (issue.type) {
+        case "missing-alt": text = "&lt;img&gt; is missing alt text"; break;
+        case "duplicate-id": return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; duplicate id "${esc(issue.id)}" (lines ${(issue.lines || []).join(", ")})</li>`;
+        case "deprecated-tag": text = `deprecated tag &lt;${esc(issue.tag)}&gt;`; break;
+        case "inline-handler": text = "inline event handler (onclick=...) &mdash; prefer addEventListener"; break;
+        case "missing-lang": text = "&lt;html&gt; is missing the lang attribute"; break;
+        case "missing-viewport": text = "missing viewport meta tag (mobile rendering)"; break;
+        case "missing-title": text = "document has no &lt;title&gt;"; break;
+        default: text = esc(issue.type);
       }
-      return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; duplicate id "${esc(issue.id)}" (lines ${issue.lines.join(", ")})</li>`;
+      return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; line ${issue.line}: ${text}</li>`;
     });
     const styleItems = styleIssues.slice(0, 25).map((issue) => {
-      if (issue.type === "duplicate-selector") {
-        return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; line ${issue.line}: duplicate selector "${esc(issue.selector)}" (first seen line ${issue.firstLine})</li>`;
+      let text;
+      switch (issue.type) {
+        case "duplicate-selector": text = `duplicate selector "${esc(issue.selector)}" (first seen line ${issue.firstLine})`; break;
+        case "high-specificity": text = `high-specificity selector "${esc(issue.selector)}" (score ${issue.specificity})`; break;
+        case "duplicate-property": text = `property "${esc(issue.property)}" repeated inside "${esc(issue.selector)}"`; break;
+        case "empty-rule": text = `empty rule "${esc(issue.selector)}"`; break;
+        case "universal-selector": text = `universal descendant selector "${esc(issue.selector)}" (slow matching)`; break;
+        case "long-selector": text = `overly long selector "${esc(issue.selector)}" (${issue.parts} parts)`; break;
+        case "z-index": text = `extreme z-index value ${issue.value}`; break;
+        default: text = "!important declaration";
       }
-      if (issue.type === "high-specificity") {
-        return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; line ${issue.line}: high-specificity selector "${esc(issue.selector)}" (score ${issue.specificity})</li>`;
-      }
-      return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; line ${issue.line}: !important declaration</li>`;
+      return `<li><span class="file-path">${esc(issue.file)}</span> &mdash; line ${issue.line}: ${text}</li>`;
     });
 
     list.innerHTML = markupItems.concat(styleItems).join("");

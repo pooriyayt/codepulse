@@ -45,7 +45,7 @@
   // ---------- panels refresh (charts read CSS vars / direction) ----------
 
   function refreshPanels() {
-    for (const name of ["Dashboard", "GraphQLPanel", "KnowledgePanel"]) {
+    for (const name of ["Dashboard", "GraphQLPanel", "KnowledgePanel", "SqlSchemaPanel"]) {
       const panel = window[name];
       if (panel && typeof panel.refreshTheme === "function") {
         try { panel.refreshTheme(); } catch (err) { console.error(name, err); }
@@ -264,10 +264,21 @@
       window.GraphQLPanel.render(report.graphql);
     }
 
-    const hasKg = Boolean(report.knowledgeGraph && report.knowledgeGraph.present);
-    if (kgTabBtn) kgTabBtn.hidden = !hasKg;
-    if (hasKg && window.KnowledgePanel && typeof window.KnowledgePanel.render === "function") {
-      window.KnowledgePanel.render(report.knowledgeGraph);
+    // Prefer a user-provided graph.json; otherwise fall back to the
+    // auto-generated project knowledge graph (built without AI).
+    const userKg = report.knowledgeGraph && report.knowledgeGraph.present ? report.knowledgeGraph : null;
+    const autoKg = report.projectGraph && report.projectGraph.present ? report.projectGraph : null;
+    const kgData = userKg || autoKg;
+    if (kgTabBtn) kgTabBtn.hidden = !kgData;
+    if (kgData && window.KnowledgePanel && typeof window.KnowledgePanel.render === "function") {
+      window.KnowledgePanel.render(kgData);
+    }
+
+    const hasSql = Boolean(report.sqlSchema && report.sqlSchema.present);
+    const sqlTabBtn = $("sqlTabBtn");
+    if (sqlTabBtn) sqlTabBtn.hidden = !hasSql;
+    if (hasSql && window.SqlSchemaPanel && typeof window.SqlSchemaPanel.render === "function") {
+      window.SqlSchemaPanel.render(report.sqlSchema);
     }
   }
 

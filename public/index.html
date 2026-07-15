@@ -29,7 +29,7 @@
   <!-- Fonts & icons via CDN - no build step required -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
-  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/style.css?v=8">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
 </head>
@@ -141,6 +141,7 @@
         <button class="tab" data-tab="duplicates" role="tab"><i class="fa-solid fa-clone"></i>&nbsp;<span data-i18n="tab.dups">Duplicates</span></button>
         <button class="tab tab-graphql" data-tab="graphql" id="graphqlTabBtn" role="tab" hidden><i class="fa-solid fa-circle-nodes"></i>&nbsp;<span data-i18n="tab.gql">GraphQL Schema</span></button>
         <button class="tab tab-kg" data-tab="knowledge" id="kgTabBtn" role="tab" hidden><i class="fa-solid fa-brain"></i>&nbsp;<span data-i18n="tab.kg">Knowledge Graph</span></button>
+        <button class="tab tab-sql" data-tab="sqlschema" id="sqlTabBtn" role="tab" hidden><i class="fa-solid fa-database"></i>&nbsp;<span data-i18n="tab.sql">SQL Schema</span></button>
         <button class="tab tab-guide" data-tab="guide" role="tab"><i class="fa-solid fa-circle-question"></i>&nbsp;<span data-i18n="tab.guide">Guide</span></button>
       </nav>
 
@@ -314,6 +315,7 @@
           <div class="kg-toolbar">
             <button id="kgLoadFullBtn" class="btn btn-ghost btn-sm" hidden><i class="fa-solid fa-maximize"></i>&nbsp;<span data-i18n="kg.loadFull">Load full graph</span></button>
             <button id="kgExportBtn" class="btn btn-ghost btn-sm" hidden><i class="fa-solid fa-camera-retro"></i>&nbsp;<span data-i18n="kg.exportBtn">Export as image</span></button>
+            <button id="kgDownloadJsonBtn" class="btn btn-ghost btn-sm" hidden><i class="fa-solid fa-download"></i>&nbsp;<span data-i18n="kg.downloadJson">Download graph.json</span></button>
           </div>
           <div id="kgGraph" class="graph-canvas kg-graph"></div>
           <div id="kgNodeDetails" class="node-details" hidden></div>
@@ -329,6 +331,36 @@
             <h2><i class="fa-solid fa-diagram-next card-i"></i><span data-i18n="kg.rels">Relation types</span></h2>
             <p class="card-sub" data-i18n="kg.relsSub">Edge counts by relationship kind</p>
             <div id="kgRelations"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SQL Schema (ER graph, extracted from .sql files) -->
+      <div id="tab-sqlschema" class="tab-panel">
+        <div class="kg-hero">
+          <div>
+            <h2><i class="fa-solid fa-database"></i> <span data-i18n="tab.sql">SQL Schema</span></h2>
+            <p class="kg-sub" data-i18n="sql.sub">Tables and foreign-key relations extracted from your .sql files &mdash; no AI, pure static parsing.</p>
+          </div>
+          <div class="kg-chips" id="sqlChips"></div>
+        </div>
+
+        <div class="card kg-card">
+          <h2><i class="fa-solid fa-diagram-project card-i"></i><span data-i18n="sql.er">ER graph</span></h2>
+          <p class="card-sub" data-i18n="sql.erSub">Each node is a table; arrows point from the referencing table to the referenced one. Drag to pan, scroll to zoom.</p>
+          <div id="sqlGraph" class="graph-canvas kg-graph"></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card kg-card">
+            <h2><i class="fa-solid fa-table card-i"></i><span data-i18n="sql.tables">Tables</span></h2>
+            <p class="card-sub" data-i18n="sql.tablesSub">Columns, keys and the file each table is defined in.</p>
+            <div id="sqlTables"></div>
+          </div>
+          <div class="card kg-card" id="sqlIssuesCard">
+            <h2><i class="fa-solid fa-triangle-exclamation card-i"></i><span data-i18n="sql.issues">SQL issues</span></h2>
+            <p class="card-sub" data-i18n="sql.issuesSub">SELECT *, DELETE/UPDATE without WHERE and heavy JOINs.</p>
+            <ul class="issue-list" id="sqlIssues"></ul>
           </div>
         </div>
       </div>
@@ -375,6 +407,14 @@
           <div class="guide-item guide-kg">
             <span class="g-icon"><i class="fa-solid fa-brain"></i></span>
             <div><h3 data-i18n="g.kg.t">Knowledge Graph tab</h3><p data-i18n="g.kg.d">Appears when the project contains a Graphify output (graphify-out/graph.json) or any JSON with nodes/edges arrays. Nodes are functions, classes and concepts; colors are community clusters; dashed edges are inferred; god nodes are the most connected concepts.</p></div>
+          </div>
+          <div class="guide-item guide-kg">
+            <span class="g-icon"><i class="fa-solid fa-hexagon-nodes"></i></span>
+            <div><h3 data-i18n="g.autokg.t">Auto knowledge graph</h3><p data-i18n="g.autokg.d">If no graph.json is found, CodePulse builds a knowledge graph of your project automatically from static analysis (files, classes, functions, imports, SQL tables) &mdash; no AI. You can download it as a Graphify-compatible graph.json.</p></div>
+          </div>
+          <div class="guide-item guide-sql">
+            <span class="g-icon"><i class="fa-solid fa-database"></i></span>
+            <div><h3 data-i18n="g.sql.t">SQL Schema tab</h3><p data-i18n="g.sql.d">Appears when the project contains .sql files. CodePulse parses CREATE TABLE / FOREIGN KEY statements and draws an ER graph of your database, plus warnings like SELECT * or DELETE without WHERE.</p></div>
           </div>
           <div class="guide-item">
             <span class="g-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
@@ -435,11 +475,12 @@
     </div>
   </div>
 
-  <script src="js/i18n.js?v=7"></script>
-  <script src="js/dashboard.js?v=7"></script>
-  <script src="js/graphql.js?v=7"></script>
-  <script src="js/share.js?v=7"></script>
-  <script src="js/knowledge.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
+  <script src="js/i18n.js?v=8"></script>
+  <script src="js/dashboard.js?v=8"></script>
+  <script src="js/graphql.js?v=8"></script>
+  <script src="js/share.js?v=8"></script>
+  <script src="js/knowledge.js?v=8"></script>
+  <script src="js/sqlschema.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
 </body>
 </html>

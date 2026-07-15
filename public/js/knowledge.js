@@ -51,7 +51,9 @@ window.KnowledgePanel = (function () {
     document.getElementById("kgChips").innerHTML = chips
       .map((x) => `<span class="kg-chip"><strong>${fmt(x.value)}</strong>${esc(x.label)}</span>`)
       .join("");
-    document.getElementById("kgSources").textContent = `Loaded from ${data.sourcePath}`;
+    document.getElementById("kgSources").textContent = data.generated
+      ? t("kg.generatedNote", "Auto-generated from your code structure by static analysis - no AI needed.")
+      : `Loaded from ${data.sourcePath}`;
 
     updateNotice();
   }
@@ -218,6 +220,11 @@ window.KnowledgePanel = (function () {
     if (exportBtn && !exportBtn.dataset.wired) {
       exportBtn.dataset.wired = "1";
       exportBtn.addEventListener("click", exportGraphImage);
+    }
+    const downloadBtn = document.getElementById("kgDownloadJsonBtn");
+    if (downloadBtn && !downloadBtn.dataset.wired) {
+      downloadBtn.dataset.wired = "1";
+      downloadBtn.addEventListener("click", downloadGraphJson);
     }
   }
 
@@ -441,6 +448,19 @@ window.KnowledgePanel = (function () {
     document.body.removeChild(link);
   }
 
+  function downloadGraphJson() {
+    if (!data || !data.raw) return;
+    const blob = new Blob([JSON.stringify(data.raw, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "graph.json";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   function render(kg) {
     data = kg;
     usingFull = false;
@@ -460,6 +480,8 @@ window.KnowledgePanel = (function () {
     );
     const exportBtn = document.getElementById("kgExportBtn");
     if (exportBtn) exportBtn.hidden = false;
+    const downloadBtn = document.getElementById("kgDownloadJsonBtn");
+    if (downloadBtn) downloadBtn.hidden = !(data && data.raw);
   }
 
   function refreshTheme() {

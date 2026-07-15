@@ -1619,3 +1619,48 @@ html[lang="fa"] input {
 [data-theme="glass"] .orb-b { background: color-mix(in srgb, #0a84ff 30%, transparent); }
 [data-theme="glass"] .orb-c { background: color-mix(in srgb, #30d158 28%, transparent); }
 [data-theme="glass"] body::before { opacity: 1; }
+
+/* ===== SQL Schema tab ===== */
+.sql-table {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: rgba(127, 127, 127, 0.04);
+}
+.sql-table h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sql-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.sql-col {
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(127, 127, 127, 0.08);
+  color: var(--text-secondary, inherit);
+}
+.sql-col em {
+  opacity: 0.65;
+  font-style: normal;
+}
+.sql-col .pk {
+  color: var(--orange, #e8a33d);
+  margin-inline-end: 4px;
+  font-size: 10px;
+}
+.sql-file {
+  margin-top: 8px;
+  font-size: 11px;
+  opacity: 0.6;
+  direction: ltr;
+  text-align: start;
+}
