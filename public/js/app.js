@@ -245,7 +245,11 @@
           reject(new Error((payload && payload.error) || `Analysis failed (HTTP ${xhr.status})`));
         }
       };
-      xhr.onerror = () => reject(new Error("Network error during upload."));
+      // Big projects on slow shared hosting can take a while.
+      xhr.timeout = 10 * 60 * 1000;
+      xhr.ontimeout = () => reject(new Error(t("err.timeout", "The server took too long to answer. Try a smaller ZIP or remove heavy folders (node_modules, database dumps, ...) and try again.")));
+      xhr.onabort = () => reject(new Error(t("err.aborted", "Upload was cancelled.")));
+      xhr.onerror = () => reject(new Error(t("err.network", "Connection to the server was lost during upload/analysis. Check that the app is running (open /api/health), make sure the ZIP is under 100 MB, then try again.")));
       xhr.send(body);
     });
   }
@@ -294,6 +298,10 @@
     if (!file) return;
     if (!/\.zip$/i.test(file.name)) {
       showError("Please choose a .zip file.");
+      return;
+    }
+    if (file.size > 100 * 1024 * 1024) {
+      showError(t("err.zipTooBig", "This ZIP is larger than the 100 MB upload limit. Remove build folders, node_modules or database dumps and try again."));
       return;
     }
     startLoading(`${t("loading.analyzing", "Analyzing")} ${file.name}\u2026`);

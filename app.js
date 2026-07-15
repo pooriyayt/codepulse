@@ -15,10 +15,25 @@ const express = require("express");
 
 const analyzeRouter = require("./routes/analyze");
 
+// Safety net for shared hosting: never let one bad request or a stray async
+// error kill the whole Node process (a dead process surfaces as a generic
+// "Network error" in the browser). Errors are logged and the app keeps serving.
+process.on("uncaughtException", (err) => {
+  console.error("[codepulse] uncaught exception:", err && err.stack ? err.stack : err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[codepulse] unhandled rejection:", reason && reason.stack ? reason.stack : reason);
+});
+
 const app = express();
 
 app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
+
+// Quick liveness check: open /api/health in the browser to verify the app runs.
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true, name: "codepulse", node: process.version, uptime: Math.round(process.uptime()) });
+});
 
 // API routes
 app.use("/api", analyzeRouter);
