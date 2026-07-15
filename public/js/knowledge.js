@@ -174,6 +174,59 @@ window.KnowledgePanel = (function () {
     return esc(String(s)).replace(/"/g, "&quot;");
   }
 
+  // Extension -> {icon, color} map so file names in the node inspector get a
+  // recognizable, colored icon instead of one generic glyph for every file.
+  const EXT_ICONS = {
+    js: ["fa-brands fa-js", "#f0db4f"], jsx: ["fa-brands fa-js", "#f0db4f"], mjs: ["fa-brands fa-js", "#f0db4f"], cjs: ["fa-brands fa-js", "#f0db4f"],
+    ts: ["fa-solid fa-file-code", "#3178c6"], tsx: ["fa-solid fa-file-code", "#3178c6"],
+    py: ["fa-brands fa-python", "#3776ab"],
+    php: ["fa-brands fa-php", "#8892bf"],
+    html: ["fa-brands fa-html5", "#e34c26"], htm: ["fa-brands fa-html5", "#e34c26"],
+    css: ["fa-brands fa-css3-alt", "#2965f1"], scss: ["fa-brands fa-css3-alt", "#c6538c"], sass: ["fa-brands fa-css3-alt", "#c6538c"], less: ["fa-brands fa-css3-alt", "#1d365d"],
+    rb: ["fa-solid fa-gem", "#cc342d"],
+    java: ["fa-solid fa-file-code", "#ea2d2e"],
+    sql: ["fa-solid fa-database", "#4fc1c9"],
+    json: ["fa-solid fa-code", "#f5a524"],
+    md: ["fa-brands fa-markdown", "#9aa4b2"],
+    go: ["fa-solid fa-file-code", "#00add8"],
+    c: ["fa-solid fa-file-code", "#6a8caf"], h: ["fa-solid fa-file-code", "#6a8caf"],
+    cpp: ["fa-solid fa-file-code", "#f34b7d"], cc: ["fa-solid fa-file-code", "#f34b7d"], hpp: ["fa-solid fa-file-code", "#f34b7d"],
+    cs: ["fa-solid fa-file-code", "#178600"],
+    graphql: ["fa-solid fa-circle-nodes", "#e535ab"], gql: ["fa-solid fa-circle-nodes", "#e535ab"],
+    vue: ["fa-brands fa-vuejs", "#41b883"],
+    yml: ["fa-solid fa-gears", "#9aa4b2"], yaml: ["fa-solid fa-gears", "#9aa4b2"],
+  };
+
+  function fileIconMeta(path) {
+    const m = /\.([a-zA-Z0-9]+)$/.exec(String(path || ""));
+    const ext = m ? m[1].toLowerCase() : "";
+    const hit = EXT_ICONS[ext];
+    return hit ? { icon: hit[0], color: hit[1] } : { icon: "fa-solid fa-file-lines", color: "var(--text-secondary)" };
+  }
+
+  function baseName(path) {
+    const parts = String(path || "").split(/[\\/]/);
+    return parts[parts.length - 1] || String(path || "");
+  }
+
+  function dirName(path) {
+    const parts = String(path || "").split(/[\\/]/);
+    parts.pop();
+    return parts.join("/");
+  }
+
+  // Renders a file path as a small colored chip: icon + optional muted
+  // directory prefix + bold basename, truncated with an ellipsis and a
+  // full-path tooltip so long paths never break the layout.
+  function fileChip(path) {
+    if (!path) return "";
+    const meta = fileIconMeta(path);
+    const dir = dirName(path);
+    const base = baseName(path);
+    const dirHtml = dir ? `<span class="kg-file-dir">${esc(dir)}/</span>` : "";
+    return `<span class="kg-file-chip" title="${escAttr(path)}"><i class="${meta.icon}" style="color:${meta.color}"></i><span class="kg-file-name">${dirHtml}<span class="kg-file-base">${esc(base)}</span></span></span>`;
+  }
+
   // Derive the source file of a node from the auto-generated node id
   // (file:path, class:path:Name, fn:path#name@line) or its source field.
   function nodeFile(node) {
@@ -223,11 +276,14 @@ window.KnowledgePanel = (function () {
 
     const ioList = (rows, icon, titleKey, titleFallback) => {
       if (!rows.length) return "";
-      const items = rows.slice(0, 6).map((x) =>
-        `<li><i class="fa-solid ${icon}"></i><button type="button" class="kg-node-link" data-focus-node="${escAttr(String(x.other.id))}">${esc(String(x.other.label))}</button>${x.rel ? `<em>${esc(String(x.rel))}</em>` : ""}</li>`
-      ).join("");
+      const items = rows.slice(0, 6).map((x) => {
+        const otherFile = nodeFile(x.other);
+        const dotMeta = otherFile ? fileIconMeta(otherFile) : null;
+        const dot = dotMeta ? `<span class="kg-io-typedot" style="background:${dotMeta.color}" title="${escAttr(otherFile)}"></span>` : "";
+        return `<li><i class="fa-solid ${icon} kg-io-dir"></i>${dot}<button type="button" class="kg-node-link" data-focus-node="${escAttr(String(x.other.id))}" title="${escAttr(String(x.other.label))}">${esc(String(x.other.label))}</button>${x.rel ? `<span class="kg-io-rel">${esc(String(x.rel))}</span>` : ""}</li>`;
+      }).join("");
       const more = rows.length > 6 ? `<li class="kg-more">+${rows.length - 6}</li>` : "";
-      return `<div class="kg-io"><h4>${esc(t(titleKey, titleFallback))} (${fmt(rows.length)})</h4><ul>${items}${more}</ul></div>`;
+      return `<div class="kg-io"><h4><i class="fa-solid ${icon}"></i> ${esc(t(titleKey, titleFallback))} <span class="kg-io-count">(${fmt(rows.length)})</span></h4><ul>${items}${more}</ul></div>`;
     };
 
     const summary = tt(
@@ -239,8 +295,8 @@ window.KnowledgePanel = (function () {
     return `
       <h3>${esc(String(node.label))} <span class="pill pill-kg">${esc(typeLabel)}</span>${node.community != null ? ` <span class="pill">${esc(String(node.community))}</span>` : ""}</h3>
       <p class="kg-node-summary">${esc(summary)}</p>
-      ${file ? `<p class="kg-node-file"><i class="fa-solid fa-file-code"></i> ${esc(t("kg.node.file", "Defined in:"))} <code>${esc(file)}</code></p>` : ""}
-      ${connectedFiles.length ? `<p class="kg-node-file"><i class="fa-solid fa-link"></i> ${esc(t("kg.node.files", "Connected files:"))} ${connectedFiles.slice(0, 5).map((f) => `<code>${esc(f)}</code>`).join(" ")}${connectedFiles.length > 5 ? ` +${connectedFiles.length - 5}` : ""}</p>` : ""}
+      ${file ? `<p class="kg-node-file"><span class="kg-node-file-label">${esc(t("kg.node.file", "Defined in:"))}</span> ${fileChip(file)}</p>` : ""}
+      ${connectedFiles.length ? `<p class="kg-node-file"><span class="kg-node-file-label">${esc(t("kg.node.files", "Connected files:"))}</span> <span class="kg-file-chip-list">${connectedFiles.slice(0, 5).map((f) => fileChip(f)).join("")}</span>${connectedFiles.length > 5 ? `<span class="kg-more-inline">+${connectedFiles.length - 5}</span>` : ""}</p>` : ""}
       <div class="kg-io-wrap">
         ${ioList(incoming, "fa-arrow-right-to-bracket", "kg.node.in", "Incoming")}
         ${ioList(outgoing, "fa-arrow-right-from-bracket", "kg.node.out", "Outgoing")}

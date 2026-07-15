@@ -58,6 +58,12 @@
   if (window.I18N) {
     let savedLang = null;
     try { savedLang = localStorage.getItem("chd-lang"); } catch (_err) { /* ignore */ }
+    if (savedLang !== "fa" && savedLang !== "en") {
+      // Smart first-visit detection: match the visitor's browser language automatically.
+      let browserLang = "";
+      try { browserLang = (navigator.language || (navigator.languages && navigator.languages[0]) || "").toLowerCase(); } catch (_err) { /* ignore */ }
+      savedLang = browserLang.indexOf("fa") === 0 ? "fa" : "en";
+    }
     window.I18N.apply(savedLang === "fa" ? "fa" : "en");
   }
 

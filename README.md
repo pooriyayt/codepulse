@@ -31,6 +31,8 @@ CodePulse analyzes a code project — uploaded as a ZIP, picked as a folder from
 - **Knowledge-graph viewer (Graphify)** — if the project contains `graphify-out/graph.json` from [Graphify](https://github.com/Graphify-Labs/graphify) (or any graph-shaped JSON with `nodes` / `edges`), a dedicated tab renders the concept graph with community colors, god-node ranking, relation-type breakdown, and EXTRACTED / INFERRED / AMBIGUOUS confidence tags.
 - **SQL schema (ER) graph** — parses `CREATE TABLE` / `FOREIGN KEY` / `ALTER TABLE` statements in `.sql` files and renders an interactive ER diagram of your database (tables, columns, keys, relations), plus warnings for `SELECT *`, `DELETE`/`UPDATE` without `WHERE`, and queries with many JOINs — no AI, pure parsing.
 - **Auto-generated knowledge graph** — if no `graph.json` exists, CodePulse builds a Graphify-compatible knowledge graph of your project (files, classes, functions, imports, SQL tables) from static analysis alone — no AI — and lets you download it as `graph.json`.
+- **Node inspector with file chips** — clicking a Graphify/knowledge-graph node shows a readable write-up (summary, incoming/outgoing relations) with color-coded, per-extension file icons instead of raw file paths.
+- **Smart Suggestions tab** — a rule-based advisor (no AI) that reads your own analysis results and writes prioritized, plain-language fixes for complexity, size, nesting, duplication, cycles, markup/CSS and SQL issues, typed out live in English or Persian to match your interface language.
 - **3 ways to analyze** — drag & drop a ZIP, pick a folder straight from your computer (heavy folders like `node_modules` are skipped automatically), or point to a folder path on the server.
 - **Premium liquid-glass UI** — frosted-glass surfaces, ambient glow, Font Awesome icons, 9 themes (Dark, Light, Midnight, Ocean, Sunset, Nord, Dracula, Solarized, Glass) and a built-in **Guide** tab that explains every metric.
 - **Bilingual interface** — switch between English and Persian (RTL) with one click; language and theme are remembered.
@@ -112,7 +114,7 @@ Issues and pull requests are welcome! The codebase is small and dependency-light
 
 ## 🇮🇷 فارسی
 
-**CodePulse** — ابزاری برای تحلیل ایستای پروژه‌های کدنویسی ب�� خروجی بصری و تعاملی. پروژه را به‌صورت ZIP آپلود کنید، یک فولدر از سیستم‌تان انتخاب کنید، یا مسیر یک فولدر روی سرور را بدهید؛ گزارش کامل سلامت کد را ببینید. همه‌چیز با تحلیل ایستای خالص (پارس AST و ریاضیات) انجام می‌شود — **بدون هوش مصنوعی، بدون API خارجی، بدون دیتابیس** و کاملاً **بدون مرحله Build**، مناسب اجرا روی هاست اشتراکی cPanel.
+**CodePulse** — ابزاری برای تحلیل ایستای پروژه‌های کدنوی��ی ب�� خروجی بصری و تعاملی. پروژه را به‌صورت ZIP آپلود کنید، یک فولدر از سیستم‌تان انتخاب کنید، یا مسیر یک فولدر روی سرور را بدهید؛ گزارش کامل سلامت کد را ببینید. همه‌چیز با تحلیل ایستای خالص (پارس AST و ریاضیات) انجام می‌شود — **بدون هوش مصنوعی، بدون API خارجی، بدون دیتابیس** و کاملاً **بدون مرحله Build**، مناسب اجرا روی هاست اشتراکی cPanel.
 
 ### ✨ امکانات
 
@@ -127,6 +129,8 @@ Issues and pull requests are welcome! The codebase is small and dependency-light
 - **نمایشگر گراف دانش (Graphify)** — اگر پروژه شامل `graphify-out/graph.json` از [Graphify](https://github.com/Graphify-Labs/graphify) باشد (یا هر JSON گراف‌مانند با `nodes` و `edges`)، در یک تب اختصاصی رندر می‌شود: رنگ‌بندی بر اساس community، رتبه‌بندی نودهای پرارتباط (God Nodes)، تفکیک نوع روابط و تگ‌های اطمینان EXTRACTED / INFERRED / AMBIGUOUS.
 - **گراف اسکیمای SQL (نمودار ER)** — دستورات `CREATE TABLE` / `FOREIGN KEY` / `ALTER TABLE` را در فایل‌های `.sql` تحلیل می‌کند و نمودار ER تعاملی دیتابیس شما (جدول‌ها، ستون‌ها، کلیدها و روابط) را رسم می‌کند؛ به‌همراه هشدار برای `SELECT *`، حذف/به‌روزرسانی بدون `WHERE` و کوئری‌های با JOIN زیاد — بدون AI و فقط با پارس کردن.
 - **گراف دانش خودکار** — اگر `graph.json` در پروژه نباشد، CodePulse گراف دانش پروژه را فقط از تحلیل ایستا می‌سازد (فایل‌ها، کلاس‌ها، توابع، ایمپورت‌ها و جدول‌های SQL) — بدون AI — و می‌توانید آن را به‌صورت `graph.json` سازگار با Graphify دانلود کنید.
+- **نمایشگر جزئیات نود با آیکون فایل** — با کلیک روی هر نود در گراف دانش/Graphify، توضیحی خوانا (خلاصه، روابط ورودی/خروجی) نمایش داده می‌شود؛ به‌همراه آیکون رنگی مخصوص هر پسوند فایل به‌جای مسیر خام فایل.
+- **تب پیشنهادهای هوشمند** — یک مشاور مبتنی بر قانون (بدون AI) که نتایج تحلیل شما را می‌خواند و پیشنهادهای اولویت‌بندی‌شده و ساده برای پیچیدگی، حجم، تودرتویی، کد تکراری، حلقه‌ها، مشکلات HTML/CSS و SQL می‌نویسد؛ متناسب با زبان رابط کاربری (فارسی یا انگلیسی) به‌صورت زنده تایپ می‌شود.
 - **۳ روش تحلیل** — درگ‌اند‌دراپ فایل ZIP، انتخاب مستقیم فولدر از سیستم (فولدرهای سنگین مثل `node_modules` خودکار حذف می‌شوند)، یا دادن مسیر فولدر روی سرور.
 - **رابط کاربری پرمیوم شیشه‌ای** — سطوح شیشه‌ای مات (Liquid Glass)، آیکون‌های Font Awesome، ۹ تم ظاهری و تب **راهنما**ی داخلی که همه متریک‌ها را توضیح می‌دهد.
 - **رابط دوزبانه** — با یک کلیک بین فارسی (راست‌به‌چپ) و انگلیسی جابه‌جا شوید؛ زبان و تم ذخیره می‌شود.
