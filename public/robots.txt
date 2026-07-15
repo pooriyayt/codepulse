@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://codepulse.pouriyaparniyan.ir/sitemap.xml

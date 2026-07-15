@@ -25,6 +25,9 @@ window.SqlSchemaPanel = (function () {
       { label: t("sql.chipRelations", "Relations"), value: data.relations.length },
       { label: t("sql.chipIssues", "Issues"), value: data.issues.length },
     ];
+    const inferredCount = data.tables.filter((tbl) => tbl.fromCode).length;
+    if (inferredCount > 0) chips.push({ label: t("sql.chipFromCode", "From code"), value: inferredCount });
+    if (data.queryCount > 0) chips.push({ label: t("sql.chipQueries", "Queries in code"), value: data.queryCount });
     document.getElementById("sqlChips").innerHTML = chips
       .map((x) => `<span class="kg-chip"><strong>${fmt(x.value)}</strong>${esc(x.label)}</span>`)
       .join("");
@@ -49,6 +52,7 @@ window.SqlSchemaPanel = (function () {
       label: tbl.name + "\n" + tbl.columnCount + " col" + (tbl.columnCount === 1 ? "" : "s"),
       shape: "box",
       margin: 10,
+      shapeProperties: tbl.inferred ? { borderDashes: [6, 4] } : {},
       color: {
         background: "rgba(124,108,245,0.12)",
         border: accent,
@@ -108,7 +112,9 @@ window.SqlSchemaPanel = (function () {
         const cols = (tbl.columns || [])
           .map((c) => `<span class="sql-col">${c.primaryKey ? '<span class="pk"><i class="fa-solid fa-key"></i></span>' : ""}${esc(c.name)} <em>${esc((c.type || "").toLowerCase())}</em></span>`)
           .join("");
-        return `<div class="sql-table"><h4><i class="fa-solid fa-table"></i> ${esc(tbl.name)}</h4><div class="sql-cols">${cols}</div><div class="sql-file">${esc(tbl.file)} : ${tbl.line}</div></div>`;
+        const badge = tbl.fromCode ? ` <span class="sql-badge">${esc(t("sql.inferredBadge", "from code"))}</span>` : "";
+        const body = cols || `<em class="sql-nocols">${esc(t("sql.noCols", "columns unknown - table referenced by queries"))}</em>`;
+        return `<div class="sql-table${tbl.inferred ? " sql-table-inferred" : ""}"><h4><i class="fa-solid fa-table"></i> ${esc(tbl.name)}${badge}</h4><div class="sql-cols">${body}</div><div class="sql-file">${esc(tbl.file)} : ${tbl.line}</div></div>`;
       })
       .join("");
   }

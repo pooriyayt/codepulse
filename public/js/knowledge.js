@@ -158,12 +158,111 @@ window.KnowledgePanel = (function () {
       }
       const node = nodeList.find((n) => n.id === params.nodes[0]);
       if (!node) return;
-      const edgeCount = edgeList.filter((e) => e.from === node.id || e.to === node.id).length;
-      details.innerHTML = `
-        <h3>${esc(node.label)}${node.type ? ` <span class="pill pill-kg">${esc(String(node.type))}</span>` : ""}</h3>
-        <p>${fmt(node.degree)} connections${node.community != null ? ` \u00b7 community ${esc(String(node.community))}` : ""}${node.source ? ` \u00b7 ${esc(String(node.source))}` : ""}</p>
-        <p>${fmt(edgeCount)} edge${edgeCount === 1 ? "" : "s"} shown in this view</p>`;
+      details.innerHTML = buildNodeInfo(node, nodeList, edgeList);
       details.hidden = false;
+      wireFocusButtons(details, nodeList, edgeList);
+    });
+  }
+
+  function tt(key, fallback, params) {
+    let s = t(key, fallback);
+    for (const k in params || {}) s = s.split("{" + k + "}").join(String(params[k]));
+    return s;
+  }
+
+  function escAttr(s) {
+    return esc(String(s)).replace(/"/g, "&quot;");
+  }
+
+  // Derive the source file of a node from the auto-generated node id
+  // (file:path, class:path:Name, fn:path#name@line) or its source field.
+  function nodeFile(node) {
+    const id = String(node.id || "");
+    if (id.startsWith("file:")) return id.slice(5);
+    if (id.startsWith("class:")) {
+      const rest = id.slice(6);
+      const cut = rest.lastIndexOf(":");
+      return cut > 0 ? rest.slice(0, cut) : null;
+    }
+    if (id.startsWith("fn:")) {
+      const rest = id.slice(3);
+      const cut = rest.indexOf("#");
+      return cut > 0 ? rest.slice(0, cut) : null;
+    }
+    if (id.startsWith("table:")) return null;
+    if (node.source && /[\/\\.]/.test(String(node.source))) return String(node.source);
+    return null;
+  }
+
+  function buildNodeInfo(node, nodeList, edgeList) {
+    const byId = new Map(nodeList.map((n) => [n.id, n]));
+    const incoming = [];
+    const outgoing = [];
+    for (const e of edgeList) {
+      const rel = e.relation || e.label || e.type || "";
+      if (e.from === node.id) {
+        const other = byId.get(e.to);
+        if (other) outgoing.push({ rel, other });
+      } else if (e.to === node.id) {
+        const other = byId.get(e.from);
+        if (other) incoming.push({ rel, other });
+      }
+    }
+    const typeLabel = node.type ? String(node.type) : t("kg.node.thing", "node");
+    const file = nodeFile(node);
+    const connectedFiles = [];
+    const seenFiles = new Set();
+    for (const x of incoming.concat(outgoing)) {
+      const f = nodeFile(x.other);
+      if (f && f !== file && !seenFiles.has(f)) {
+        seenFiles.add(f);
+        connectedFiles.push(f);
+      }
+    }
+    const total = incoming.length + outgoing.length;
+
+    const ioList = (rows, icon, titleKey, titleFallback) => {
+      if (!rows.length) return "";
+      const items = rows.slice(0, 6).map((x) =>
+        `<li><i class="fa-solid ${icon}"></i><button type="button" class="kg-node-link" data-focus-node="${escAttr(String(x.other.id))}">${esc(String(x.other.label))}</button>${x.rel ? `<em>${esc(String(x.rel))}</em>` : ""}</li>`
+      ).join("");
+      const more = rows.length > 6 ? `<li class="kg-more">+${rows.length - 6}</li>` : "";
+      return `<div class="kg-io"><h4>${esc(t(titleKey, titleFallback))} (${fmt(rows.length)})</h4><ul>${items}${more}</ul></div>`;
+    };
+
+    const summary = tt(
+      "kg.node.summary",
+      "\u201c{name}\u201d is a {type} with {total} connection(s) in this view: {inc} incoming, {out} outgoing.",
+      { name: String(node.label), type: typeLabel, total, inc: incoming.length, out: outgoing.length }
+    );
+
+    return `
+      <h3>${esc(String(node.label))} <span class="pill pill-kg">${esc(typeLabel)}</span>${node.community != null ? ` <span class="pill">${esc(String(node.community))}</span>` : ""}</h3>
+      <p class="kg-node-summary">${esc(summary)}</p>
+      ${file ? `<p class="kg-node-file"><i class="fa-solid fa-file-code"></i> ${esc(t("kg.node.file", "Defined in:"))} <code>${esc(file)}</code></p>` : ""}
+      ${connectedFiles.length ? `<p class="kg-node-file"><i class="fa-solid fa-link"></i> ${esc(t("kg.node.files", "Connected files:"))} ${connectedFiles.slice(0, 5).map((f) => `<code>${esc(f)}</code>`).join(" ")}${connectedFiles.length > 5 ? ` +${connectedFiles.length - 5}` : ""}</p>` : ""}
+      <div class="kg-io-wrap">
+        ${ioList(incoming, "fa-arrow-right-to-bracket", "kg.node.in", "Incoming")}
+        ${ioList(outgoing, "fa-arrow-right-from-bracket", "kg.node.out", "Outgoing")}
+        ${total === 0 ? `<p class="kg-node-file">${esc(t("kg.node.none", "No connections in the current view."))}</p>` : ""}
+      </div>`;
+  }
+
+  function wireFocusButtons(details, nodeList, edgeList) {
+    details.querySelectorAll("[data-focus-node]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-focus-node");
+        const target = nodeList.find((n) => String(n.id) === id);
+        if (!target) return;
+        if (network) {
+          try {
+            network.selectNodes([target.id]);
+            network.focus(target.id, { scale: 1.15, animation: { duration: 450, easingFunction: "easeInOutQuad" } });
+          } catch (_e) { /* ignore */ }
+        }
+        details.innerHTML = buildNodeInfo(target, nodeList, edgeList);
+        wireFocusButtons(details, nodeList, edgeList);
+      });
     });
   }
 

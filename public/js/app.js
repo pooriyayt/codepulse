@@ -284,6 +284,10 @@
     if (hasSql && window.SqlSchemaPanel && typeof window.SqlSchemaPanel.render === "function") {
       window.SqlSchemaPanel.render(report.sqlSchema);
     }
+
+    if (window.Advisor && typeof window.Advisor.render === "function") {
+      window.Advisor.render(report);
+    }
   }
 
   function startLoading(label) {
