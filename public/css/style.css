@@ -1664,3 +1664,17 @@ html[lang="fa"] input {
   direction: ltr;
   text-align: start;
 }
+
+/* ---------- footer GitHub link ---------- */
+.footer-github {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 6px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s ease;
+}
+.footer-github i { font-size: 1.05rem; }
+.footer-github:hover { color: var(--accent); }
